@@ -12,7 +12,3 @@ const val C_WRITE = "42EC1288-B8A0-43DB-AE00-29F942ED0002"
 const val C_WAV_WRITE = "42EC1288-B8A0-43DB-AE00-29F942ED0003"
 const val C_WAV_INDICATE = "42EC1288-B8A0-43DB-AE00-29F942ED0004"
 
-const val ViPen_State_Stopped: Int = (0 shl 0)
-const val ViPen_State_Started: Int = (1 shl 0)
-const val ViPen_State_NoData: Int = (0 shl 1)
-const val ViPen_State_Data: Int = (1 shl 1)

@@ -11,14 +11,8 @@ import com.visoft.newvipenprotocol.converter.DeviceData
 import kotlinx.coroutines.*
 import no.nordicsemi.android.support.v18.scanner.*
 import java.util.*
-import kotlin.collections.ArrayList
 
-class Control(context: Context):
-    OnConnectStateListener,
-    OnServiceDiscoveredListener,
-    OnCharacteristicReadListener,
-    OnCharacteristicChangedListener,
-    OnMtuChangedListener {
+class Control(context: Context): OnConnectStateListener, OnServiceDiscoveredListener, OnCharacteristicReadListener, OnCharacteristicChangedListener, OnMtuChangedListener {
 
     var counter: Int = 0
 
@@ -52,15 +46,10 @@ class Control(context: Context):
     }
 
     private val gattCallback: CustomGattCallback.Controller = CustomGattCallback(
-        context,
-        this,
-        this,
-        this,
-        this,
-        this
+        context, this, this, this, this, this
     ).Controller()
 
-    fun init(){
+    fun init() {
         startScan()
     }
 
@@ -83,15 +72,15 @@ class Control(context: Context):
 
     private suspend fun requestMtu() = gattCallback.requestMtu()
 
-    private suspend fun downloadFirstData(){
+    private suspend fun downloadFirstData() {
         gattCallback.apply {
             writeFirstCharacteristic()
             delay(1000)
-           readFirstCharacteristic()
+            readFirstCharacteristic()
         }
     }
 
-    private suspend fun downloadSecondData(){
+    private suspend fun downloadSecondData() {
         gattCallback.apply {
             startIndicate()
             delay(200)
@@ -99,14 +88,9 @@ class Control(context: Context):
         }
     }
 
-    private suspend fun requestDeviceDataStatus(){
-        if(counter < 4) {
-            delay(1000)
-            gattCallback.requestDeviceDataStatus()
-            counter++
-        }else{
-            downloadSecondData()
-        }
+    private suspend fun requestDeviceDataStatus() {
+        delay(1000)
+        gattCallback.requestDeviceDataStatus()
     }
 
     fun disconnect() = CoroutineScope(Dispatchers.IO).launch {
@@ -122,16 +106,16 @@ class Control(context: Context):
 
     override fun changeConnectStatus(status: Int, newStatus: Int) {
 
-        when(newStatus){
-            BluetoothProfile.STATE_CONNECTED -> {
+        when(newStatus) {
+            BluetoothProfile.STATE_CONNECTED     -> {
                 CoroutineScope(Dispatchers.IO).launch {
-                        discoverService()
+                    discoverService()
                 }
             }
             BluetoothProfile.STATE_DISCONNECTING -> disconnect()
-            BluetoothProfile.STATE_DISCONNECTED -> disconnect()
+            BluetoothProfile.STATE_DISCONNECTED  -> disconnect()
         }
-        when(status){
+        when(status) {
             19 -> disconnect()
         }
         Log.wtf("OnConnectStateChange", "Status = $status // newState = $newStatus")
@@ -140,7 +124,7 @@ class Control(context: Context):
     override fun onCharacteristicReadListener(value: ByteArray, status: Int) {
         val scope = CoroutineScope(Dispatchers.IO)
 
-        if(value.size == 17){
+        if(value.size == 17) {
             value.reverse()
             val data = DeviceData(VI_PEN2_DEVICE_NAME, value)
             Log.wtf("Data", data.toString())
@@ -148,24 +132,27 @@ class Control(context: Context):
             scope.launch {
                 requestDeviceDataStatus()
             }
-        }else if(value.size == 2){
-            Log.wtf("Value", "${value.toHexString()}")
-            when(value.toInt()){
-                ViPen_State_Stopped, ViPen_State_NoData -> {
-                    Log.wtf("DeviceDataStatus", "ViPen_State_Stopped / ViPen_State_NoData")
+        } else if(value.size == 2) {
+            when(value.toInt()) {
+                ViPen_State_Stopped_NoData -> {
+                    Log.wtf("DeviceDataStatus", "ViPen_State: Stopped / NoData")
                     scope.launch {requestDeviceDataStatus()}
                 }
-                ViPen_State_Started -> {
-                    Log.wtf("DeviceDataStatus", "ViPen_State_Started")
+                ViPen_State_Started        -> {
+                    Log.wtf("DeviceDataStatus", "ViPen_State: Started")
                     scope.launch {requestDeviceDataStatus()}
                 }
-                ViPen_State_Data -> {
-                    Log.wtf("DeviceDataStatus", "ViPen_State_Data")
-                    scope.launch { downloadSecondData() }
+                ViPen_State_Data           -> {
+                    Log.wtf("DeviceDataStatus", "ViPen_State: Data")
+                    scope.launch {downloadSecondData()}
                 }
-                else -> {
-                    Log.wtf("DeviceDataStatus", "Unknown")
-                    scope.launch{ requestDeviceDataStatus() }
+                3                          -> {
+                    Log.wtf("DeviceDataStatus", "ViPen_State: In progress")
+                    scope.launch {requestDeviceDataStatus()}
+                }
+                else                       -> {
+                    Log.wtf("DeviceDataStatus", "Unknown ${value.toInt()}")
+                    scope.launch {requestDeviceDataStatus()}
                 }
             }
         }
@@ -182,3 +169,7 @@ class Control(context: Context):
         }
     }
 }
+
+const val ViPen_State_Stopped_NoData: Int = (0 shl 0)
+const val ViPen_State_Started: Int = (1 shl 0)
+const val ViPen_State_Data: Int = (1 shl 1)

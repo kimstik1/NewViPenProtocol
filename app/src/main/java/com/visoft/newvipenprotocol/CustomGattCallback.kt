@@ -2,6 +2,7 @@ package com.visoft.newvipenprotocol
 
 import android.annotation.SuppressLint
 import android.bluetooth.*
+import android.bluetooth.BluetoothGattDescriptor.ENABLE_INDICATION_VALUE
 import android.content.Context
 import android.os.Build
 import android.util.Log
@@ -128,7 +129,7 @@ class CustomGattCallback(
                 ?: throw NullPointerException("Characteristic C_WAV_WRITE is not available") // 42EC1288-B8A0-43DB-AE00-29F942ED0003
 
 
-            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val k = if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 isGattNotNull().writeCharacteristic(
                     secondWrite, ViPen_Command_Data_START_SPECTOR, BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
                 )
@@ -137,6 +138,8 @@ class CustomGattCallback(
                 secondWrite.writeType = BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
                 isGattNotNull().writeCharacteristic(secondWrite)
             }
+
+            Log.wtf("isSecondWriteCorrectly", k.toString())
         }
 
         suspend fun requestDeviceDataStatus(){
@@ -160,19 +163,21 @@ class CustomGattCallback(
             val CLIENT_CHARACTERISTIC_CONFIG: UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
             val descriptor: BluetoothGattDescriptor = secondIndicate.getDescriptor(CLIENT_CHARACTERISTIC_CONFIG)
 
-            isGattNotNull().setCharacteristicNotification(secondIndicate, true)
+            val characteristicNotification = isGattNotNull().setCharacteristicNotification(secondIndicate, true)
 
-            val ENABLE_NOTIFICATION_VALUE = byteArrayOf(2, 0)
-            writeDescriptor(descriptor, ENABLE_NOTIFICATION_VALUE)
+            val description = writeDescriptor(descriptor, ENABLE_INDICATION_VALUE)
+
+            Log.wtf("isNotificationEnabledCorrectly", characteristicNotification.toString())
+            Log.wtf("isDescriptionEnabledCorrectly", description.toString())
         }
 
         suspend fun requestMtu() = isGattNotNull().requestMtu(512)
 
         suspend fun discoverServicesAsync() = isGattNotNull().discoverServices()
 
-        private suspend fun writeDescriptor(descriptor: BluetoothGattDescriptor, payload: ByteArray) {
+        private suspend fun writeDescriptor(descriptor: BluetoothGattDescriptor, payload: ByteArray): Any {
             isGattNotNull().apply {
-                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                return if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                     writeDescriptor(descriptor, payload)
                 } else {
                     descriptor.value = payload
@@ -209,7 +214,6 @@ class CustomGattCallback(
         private val ViPen_Command_Data_STOP_MEASURING = byteArrayOf(2, 0) // Stops measurement (releases the button)
         private val ViPen_Command_Data_OFF = byteArrayOf(3, 0) // Switches off the device
         private val ViPen_Command_Data_IDLE = byteArrayOf(4, 0) // Prevents the device from automatically going to sleep
-        private const val DEVICE_SCAN_TIMEOUT = 10_000L
     }
 }
 
