@@ -134,22 +134,22 @@ class Control(context: Context): OnConnectStateListener, OnServiceDiscoveredList
             }
         } else if(value.size == 2) {
 
-            if((status and 2) > 0){
-                Log.wtf("DeviceDataStatus", "ViPen_State: Stopped / NoData")
-                scope.launch {
-                    requestDeviceDataStatus()
-                }
-            }else{
+            if((status and 2) == 0){
                 Log.wtf("DeviceDataStatus", "ViPen_State: Data")
                 scope.launch {
                     downloadSecondData()
+                }
+            }else{
+                Log.wtf("DeviceDataStatus", "ViPen_State: Stopped / NoData")
+                scope.launch {
+                    requestDeviceDataStatus()
                 }
             }
         }
     }
 
     override fun onCharacteristicChanged(characteristic: BluetoothGattCharacteristic, value: ByteArray) {
-        Log.wtf("onCharacteristicChanged", "Value.size = ${value.size}, Value = $value, HexString = ${value.toHexString()}")
+        Log.wtf("onCharacteristicChanged", "Value.size = ${value.size}, Value = $value, Data =${WaveForm("Wave", value)} ")
     }
 
     override fun onMtuChanged(mtu: Int, status: Int) {
@@ -159,3 +159,7 @@ class Control(context: Context): OnConnectStateListener, OnServiceDiscoveredList
         }
     }
 }
+data class WaveForm(
+    val name: String,
+    val waveForm: ByteArray
+)

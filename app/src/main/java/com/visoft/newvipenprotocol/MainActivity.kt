@@ -31,4 +31,7 @@ class MainActivity: AppCompatActivity(){
             control.disconnect()
         }
     }
+
+
+
 }

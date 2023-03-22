@@ -1,7 +1,5 @@
 package com.visoft.newvipenprotocol.data
 
-import com.visoft.newvipenprotocol.data.*
-
 class TVipen2MeasureSetup: java.io.Serializable {
 
     val MEAS_TYPE_SPECTRUM_MASK: UInt = 0u
@@ -19,4 +17,6 @@ class TVipen2MeasureSetup: java.io.Serializable {
     val allX :UInt = SETUP_ALLX.ALLX_8K.value
     val dX :UInt = SETUP_DX.DX_25600_HZ.value
     val avg:UInt = SETUP_AVG.AVG_4_STOP.value
+
+    val reserv: Array<UInt?> = arrayOfNulls(8)
 }

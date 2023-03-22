@@ -11,14 +11,7 @@ import com.visoft.newvipenprotocol.data.*
 import java.util.*
 
 @SuppressLint("MissingPermission")
-class CustomGattCallback(
-    private val context: Context,
-    private val onConnectStateListener: OnConnectStateListener,
-    private val onServiceDiscoveredListener: OnServiceDiscoveredListener,
-    private val onCharacteristicChangedListener: OnCharacteristicChangedListener,
-    private val onCharacteristicReadListener: OnCharacteristicReadListener,
-    private val onMtuChanged: OnMtuChangedListener
-    ): BluetoothGattCallback() {
+class CustomGattCallback(private val context: Context, private val onConnectStateListener: OnConnectStateListener, private val onServiceDiscoveredListener: OnServiceDiscoveredListener, private val onCharacteristicChangedListener: OnCharacteristicChangedListener, private val onCharacteristicReadListener: OnCharacteristicReadListener, private val onMtuChanged: OnMtuChangedListener): BluetoothGattCallback() {
 
     var gatt: BluetoothGatt? = null
     var bluetoothDevice: BluetoothDevice? = null
@@ -49,8 +42,6 @@ class CustomGattCallback(
 
     override fun onCharacteristicChanged(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic?) {
         super.onCharacteristicChanged(gatt, characteristic)
-        Log.wtf("onCharacteristicChanged.value", "${characteristic?.value?.toHexString()}")
-        Log.wtf("onCharacteristicChanged.value.size", "${characteristic?.value?.size?.toString()}")
         characteristic?.let {
             onCharacteristicChangedListener.onCharacteristicChanged(it, it.value)
         }
@@ -86,15 +77,15 @@ class CustomGattCallback(
     inner class Controller {
 
         suspend fun writeFirstCharacteristic() {
-            val service = isGattNotNull().getService(UUID.fromString(viPen2MainServiceUUID))
-                ?: throw Exception("Service is not available") //413557AA-213F-4279-8530-D38E41390000
+            val service = isGattNotNull().getService(UUID.fromString(viPen2MainServiceUUID)) ?: throw Exception("Service is not available") //413557AA-213F-4279-8530-D38E41390000
 
-            val firstWrite = service.getCharacteristic(UUID.fromString(C_WRITE))
-                ?: throw NullPointerException("Characteristic C_WRITE is not available") //42EC1288-B8A0-43DB-AE00-29F942ED0002
+            val firstWrite = service.getCharacteristic(UUID.fromString(C_WRITE)) ?: throw NullPointerException("Characteristic C_WRITE is not available") //42EC1288-B8A0-43DB-AE00-29F942ED0002
 
-            val data = TVipen2MeasureSetup()
-                    .toByteArray()
-
+            val data = byteArrayOf(
+                1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+            )
+//            TVipen2MeasureSetup().toByteArray()
+            Log.wtf("byteArrayOf.size", data.size.toString() )
 
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 isGattNotNull().writeCharacteristic(firstWrite, data, BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT)
@@ -106,21 +97,17 @@ class CustomGattCallback(
         }
 
         suspend fun readFirstCharacteristic() {
-            val service = isGattNotNull().getService(UUID.fromString(viPen2MainServiceUUID))
-                ?: throw Exception("Service is not available") // 413557AA-213F-4279-8530-D38E41390000
+            val service = isGattNotNull().getService(UUID.fromString(viPen2MainServiceUUID)) ?: throw Exception("Service is not available") // 413557AA-213F-4279-8530-D38E41390000
 
-            val firstRead = service.getCharacteristic(UUID.fromString(C_READ))
-                ?: throw NullPointerException("Characteristic C_READ is not available") // 42EC1288-B8A0-43DB-AE00-29F942ED0001
+            val firstRead = service.getCharacteristic(UUID.fromString(C_READ)) ?: throw NullPointerException("Characteristic C_READ is not available") // 42EC1288-B8A0-43DB-AE00-29F942ED0001
 
             if(gatt?.readCharacteristic(firstRead) == false) throw Exception("Characteristics read error!")
         }
 
         suspend fun writeSecondCharacteristic() {
-            val service = isGattNotNull().getService(UUID.fromString(viPen2MainServiceUUID))
-                ?: throw Exception("Service is not available") // 413557AA-213F-4279-8530-D38E41390000
+            val service = isGattNotNull().getService(UUID.fromString(viPen2MainServiceUUID)) ?: throw Exception("Service is not available") // 413557AA-213F-4279-8530-D38E41390000
 
-            val secondWrite = service.getCharacteristic(UUID.fromString(C_WAV_WRITE))
-                ?: throw NullPointerException("Characteristic C_WAV_WRITE is not available") // 42EC1288-B8A0-43DB-AE00-29F942ED0003
+            val secondWrite = service.getCharacteristic(UUID.fromString(C_WAV_WRITE)) ?: throw NullPointerException("Characteristic C_WAV_WRITE is not available") // 42EC1288-B8A0-43DB-AE00-29F942ED0003
 
 
             val k = if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -136,22 +123,18 @@ class CustomGattCallback(
             Log.wtf("isSecondWriteCorrectly", k.toString())
         }
 
-        suspend fun requestDeviceDataStatus(){
-            val service = isGattNotNull().getService(UUID.fromString(viPen2MainServiceUUID))
-                ?: throw Exception("Service is not available") // 413557AA-213F-4279-8530-D38E41390000
+        suspend fun requestDeviceDataStatus() {
+            val service = isGattNotNull().getService(UUID.fromString(viPen2MainServiceUUID)) ?: throw Exception("Service is not available") // 413557AA-213F-4279-8530-D38E41390000
 
-            val firstRead = service.getCharacteristic(UUID.fromString(C_WRITE))
-                ?: throw NullPointerException("Characteristic C_READ is not available") //42EC1288-B8A0-43DB-AE00-29F942ED0002
+            val firstRead = service.getCharacteristic(UUID.fromString(C_WRITE)) ?: throw NullPointerException("Characteristic C_READ is not available") //42EC1288-B8A0-43DB-AE00-29F942ED0002
 
             if(gatt?.readCharacteristic(firstRead) == false) throw Exception("Characteristics read error!")
         }
 
         suspend fun startIndicate() {
-            val service = isGattNotNull().getService(UUID.fromString(viPen2MainServiceUUID))
-                ?: throw Exception("Service is not available") // 413557AA-213F-4279-8530-D38E41390000
+            val service = isGattNotNull().getService(UUID.fromString(viPen2MainServiceUUID)) ?: throw Exception("Service is not available") // 413557AA-213F-4279-8530-D38E41390000
 
-            val secondIndicate = service.getCharacteristic(UUID.fromString(C_WAV_INDICATE))
-                ?: throw NullPointerException("Characteristic C_WAV_INDICATE is not available") // 42EC1288-B8A0-43DB-AE00-29F942ED0004
+            val secondIndicate = service.getCharacteristic(UUID.fromString(C_WAV_INDICATE)) ?: throw NullPointerException("Characteristic C_WAV_INDICATE is not available") // 42EC1288-B8A0-43DB-AE00-29F942ED0004
 
 
             val CLIENT_CHARACTERISTIC_CONFIG: UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
