@@ -1,6 +1,6 @@
 package com.visoft.newvipenprotocol.converter
 
-import com.visoft.newvipenprotocol.VI_PEN_DEVICE_NAME
+import com.visoft.newvipenprotocol.ble.VI_PEN_DEVICE_NAME
 
 
 class ViPenMeasurementSchemaModelMapper {

@@ -1,4 +1,4 @@
-package com.visoft.newvipenprotocol
+package com.visoft.newvipenprotocol.ble
 
 const val VI_PEN_DEVICE_NAME = "ViPen"
 const val viPenMainServiceUUID = "378B4074-C2B8-45FF-894C-418739E60000"

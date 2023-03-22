@@ -1,4 +1,4 @@
-package com.visoft.newvipenprotocol
+package com.visoft.newvipenprotocol.ble
 
 import android.annotation.SuppressLint
 import android.bluetooth.*
@@ -92,14 +92,8 @@ class CustomGattCallback(
             val firstWrite = service.getCharacteristic(UUID.fromString(C_WRITE))
                 ?: throw NullPointerException("Characteristic C_WRITE is not available") //42EC1288-B8A0-43DB-AE00-29F942ED0002
 
-            val data = TVipen2MeasureSetup(
-                VIPEN2_BT_COMMAND.START,
-                MEAS_TYPE.SPECTRUM,
-                MEAS_UNITS.VELOCITY,
-                SETUP_ALLX.ALLX_8K,
-                SETUP_DX.DX_25600_HZ,
-                SETUP_AVG.AVG_4_STOP
-            ).toByteArray()
+            val data = TVipen2MeasureSetup()
+                    .toByteArray()
 
 
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {

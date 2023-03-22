@@ -1,9 +1,8 @@
 package com.visoft.newvipenprotocol
 
-import android.bluetooth.BluetoothGattDescriptor.*
 import android.os.Bundle
-import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import com.visoft.newvipenprotocol.ble.Control
 import com.visoft.newvipenprotocol.databinding.ActivityMainBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

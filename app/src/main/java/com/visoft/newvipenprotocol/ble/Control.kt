@@ -1,4 +1,4 @@
-package com.visoft.newvipenprotocol
+package com.visoft.newvipenprotocol.ble
 
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
@@ -133,26 +133,16 @@ class Control(context: Context): OnConnectStateListener, OnServiceDiscoveredList
                 requestDeviceDataStatus()
             }
         } else if(value.size == 2) {
-            when(value.toInt()) {
-                ViPen_State_Stopped_NoData -> {
-                    Log.wtf("DeviceDataStatus", "ViPen_State: Stopped / NoData")
-                    scope.launch {requestDeviceDataStatus()}
+
+            if((status and 2) > 0){
+                Log.wtf("DeviceDataStatus", "ViPen_State: Stopped / NoData")
+                scope.launch {
+                    requestDeviceDataStatus()
                 }
-                ViPen_State_Started        -> {
-                    Log.wtf("DeviceDataStatus", "ViPen_State: Started")
-                    scope.launch {requestDeviceDataStatus()}
-                }
-                ViPen_State_Data           -> {
-                    Log.wtf("DeviceDataStatus", "ViPen_State: Data")
-                    scope.launch {downloadSecondData()}
-                }
-                3                          -> {
-                    Log.wtf("DeviceDataStatus", "ViPen_State: In progress")
-                    scope.launch {requestDeviceDataStatus()}
-                }
-                else                       -> {
-                    Log.wtf("DeviceDataStatus", "Unknown ${value.toInt()}")
-                    scope.launch {requestDeviceDataStatus()}
+            }else{
+                Log.wtf("DeviceDataStatus", "ViPen_State: Data")
+                scope.launch {
+                    downloadSecondData()
                 }
             }
         }
@@ -169,7 +159,3 @@ class Control(context: Context): OnConnectStateListener, OnServiceDiscoveredList
         }
     }
 }
-
-const val ViPen_State_Stopped_NoData: Int = (0 shl 0)
-const val ViPen_State_Started: Int = (1 shl 0)
-const val ViPen_State_Data: Int = (1 shl 1)
