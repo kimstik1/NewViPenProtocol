@@ -1,12 +1,15 @@
 package com.visoft.newvipenprotocol
 
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.visoft.newvipenprotocol.ble.Control
 import com.visoft.newvipenprotocol.databinding.ActivityMainBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
 
 
 class MainActivity: AppCompatActivity(){
@@ -31,7 +34,6 @@ class MainActivity: AppCompatActivity(){
             control.disconnect()
         }
     }
-
 
 
 }

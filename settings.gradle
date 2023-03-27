@@ -3,6 +3,7 @@ pluginManagement {
         gradlePluginPortal()
         google()
         mavenCentral()
+        maven { url "https://kotlin.bintray.com/kotlinx" }
     }
 }
 
@@ -12,6 +13,7 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        maven { url "https://kotlin.bintray.com/kotlinx" }
     }
 }
 rootProject.name = "NewViPenProtocol"

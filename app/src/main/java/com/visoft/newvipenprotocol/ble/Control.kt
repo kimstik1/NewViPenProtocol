@@ -1,3 +1,4 @@
+
 package com.visoft.newvipenprotocol.ble
 
 import android.annotation.SuppressLint
@@ -8,6 +9,8 @@ import android.content.Context
 import android.util.Log
 import com.visoft.newvipenprotocol.callbacks.*
 import com.visoft.newvipenprotocol.converter.DeviceData
+import com.visoft.newvipenprotocol.data.Converter
+import com.visoft.newvipenprotocol.data.StVPen2Data
 import kotlinx.coroutines.*
 import no.nordicsemi.android.support.v18.scanner.*
 import java.util.*
@@ -15,6 +18,9 @@ import java.util.*
 class Control(context: Context): OnConnectStateListener, OnServiceDiscoveredListener, OnCharacteristicReadListener, OnCharacteristicChangedListener, OnMtuChangedListener {
 
     var counter: Int = 0
+    val spectorResponse: MutableList<ByteArray> = mutableListOf()
+    var standardResponse: ByteArray = byteArrayOf()
+
 
     private val scanCallback = object: ScanCallback() {
         override fun onScanResult(callbackType: Int, result: ScanResult) {
@@ -72,20 +78,16 @@ class Control(context: Context): OnConnectStateListener, OnServiceDiscoveredList
 
     private suspend fun requestMtu() = gattCallback.requestMtu()
 
-    private suspend fun downloadFirstData() {
-        gattCallback.apply {
-            writeFirstCharacteristic()
-            delay(1000)
-            readFirstCharacteristic()
-        }
+    private suspend fun downloadFirstData() = gattCallback.apply {
+        writeFirstCharacteristic()
+        delay(1000)
+        readFirstCharacteristic()
     }
 
-    private suspend fun downloadSecondData() {
-        gattCallback.apply {
-            startIndicate()
-            delay(200)
-            writeSecondCharacteristic()
-        }
+    private suspend fun downloadSecondData()  = gattCallback.apply {
+        startIndicate()
+        delay(200)
+        writeSecondCharacteristicSpector()
     }
 
     private suspend fun requestDeviceDataStatus() {
@@ -93,12 +95,24 @@ class Control(context: Context): OnConnectStateListener, OnServiceDiscoveredList
         gattCallback.requestDeviceDataStatus()
     }
 
+    fun convert(){
+        val headerData = Converter().convertHeader(spectorResponse[0])
+        Log.wtf("HeaderData", headerData.toString())
+        val blocks = Converter().convertBlocks(spectorResponse)
+        val data = WaveForm( "FinalData", Converter().convertToFloatList(StVPen2Data(headerData, blocks)))
+        Log.wtf("Data", data.toString())
+    }
+
+    private suspend fun stopMeasuring(){
+        gattCallback.stopMeasuring()
+        convert()
+    }
+
     fun disconnect() = CoroutineScope(Dispatchers.IO).launch {
         gattCallback.closeConnection()
     }
 
     override fun serviceDiscovered(status: Int) {
-        Log.wtf("OnServiceDiscovered", "Status = $status")
         CoroutineScope(Dispatchers.IO).launch {
             requestMtu()
         }
@@ -128,12 +142,11 @@ class Control(context: Context): OnConnectStateListener, OnServiceDiscoveredList
             value.reverse()
             val data = DeviceData(VI_PEN2_DEVICE_NAME, value)
             Log.wtf("Data", data.toString())
-
+            standardResponse = value
             scope.launch {
                 requestDeviceDataStatus()
             }
         } else if(value.size == 2) {
-
             if((status and 2) == 0){
                 Log.wtf("DeviceDataStatus", "ViPen_State: Data")
                 scope.launch {
@@ -149,7 +162,13 @@ class Control(context: Context): OnConnectStateListener, OnServiceDiscoveredList
     }
 
     override fun onCharacteristicChanged(characteristic: BluetoothGattCharacteristic, value: ByteArray) {
-        Log.wtf("onCharacteristicChanged", "Value.size = ${value.size}, Value = $value, Data =${WaveForm("Wave", value)} ")
+        spectorResponse.add(value)
+        counter++
+        if(counter == 29){
+            CoroutineScope(Dispatchers.IO).launch {
+                stopMeasuring()
+            }
+        }
     }
 
     override fun onMtuChanged(mtu: Int, status: Int) {
@@ -159,7 +178,8 @@ class Control(context: Context): OnConnectStateListener, OnServiceDiscoveredList
         }
     }
 }
+
 data class WaveForm(
     val name: String,
-    val waveForm: ByteArray
+    val waveForm: List<Float>
 )

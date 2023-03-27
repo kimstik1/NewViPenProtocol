@@ -1,4 +1,8 @@
+@file:OptIn(ExperimentalSerializationApi::class)
+
 package com.visoft.newvipenprotocol.data
+
+import kotlinx.serialization.ExperimentalSerializationApi
 
 class TVipen2MeasureSetup: java.io.Serializable {
 
@@ -17,6 +21,6 @@ class TVipen2MeasureSetup: java.io.Serializable {
     val allX :UInt = SETUP_ALLX.ALLX_8K.value
     val dX :UInt = SETUP_DX.DX_25600_HZ.value
     val avg:UInt = SETUP_AVG.AVG_4_STOP.value
-
-    val reserv: Array<UInt?> = arrayOfNulls(8)
 }
+
+const val VIPEN2_BLUETOOTH_PACKET_DATA_SIZE: Int = 236
