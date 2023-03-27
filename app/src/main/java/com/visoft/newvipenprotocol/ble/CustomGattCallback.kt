@@ -63,7 +63,7 @@ class CustomGattCallback(private val context: Context, private val onConnectStat
             val firstWrite = service.getCharacteristic(UUID.fromString(C_WRITE))
                 ?: throw NullPointerException("Characteristic C_WRITE is not available") //42EC1288-B8A0-43DB-AE00-29F942ED0002
 
-            val data = ViPen_Command_Data_START_MEASURING_WAVE
+            val data = ViPen_Command_Data_START_MEASURING_SPECTOR
 
             return if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 isGattNotNull().writeCharacteristic(firstWrite, data, BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT) == BluetoothStatusCodes.SUCCESS

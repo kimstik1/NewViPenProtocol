@@ -52,7 +52,6 @@ class Converter{
 
                 if(counter % 2 == 0 && counter != currentBlock.size-1){
                     val byteArray = byteArrayOf(currentBlock[counter], currentBlock[counter+1])
-                    byteArray.reverse()
                     shortArray.add(byteArray.getShort())
                 }
             }
@@ -108,6 +107,7 @@ class Converter{
     }
 
     private fun ByteArray.getShort(): Short{
+        this.reverse()
         val buffer = ByteBuffer.wrap(this).order(ByteOrder.BIG_ENDIAN)
         return buffer.short
     }
