@@ -1,4 +1,4 @@
-package com.visoft.newvipenprotocol.data
+package com.expertuniversal.vipen.data
 
 data class StVPen2Header(
     val viPen2_Get_Data_Command: Int,
@@ -17,7 +17,7 @@ data class StVPen2Header(
 
 data class StVPen2Data(
     val stVPen2Header: StVPen2Header,
-    val blocks: MutableList<StVPen2Block>
+    val blocks: List<StVPen2Block>
 )
 
 data class StVPen2Block(

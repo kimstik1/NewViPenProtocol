@@ -19,3 +19,4 @@ dependencyResolutionManagement {
 rootProject.name = "NewViPenProtocol"
 include ':app'
 include ':library'
+include ':vipen-ble'

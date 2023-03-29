@@ -1,11 +1,24 @@
-package com.visoft.newvipenprotocol.data
+package com.expertuniversal.vipen.converter
 
+import android.util.Log
+import com.expertuniversal.vipen.data.StVPen2Block
+import com.expertuniversal.vipen.data.StVPen2Data
+import com.expertuniversal.vipen.data.StVPen2Header
+import com.expertuniversal.vipen.data.ViPenUserData
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
 class Converter{
 
-    fun convertHeader(byteArray: ByteArray): StVPen2Header{
+    private val viPenMeasurementSchemaModelMapper = ViPenMeasurementSchemaModelMapper()
+
+    fun convertWave(byteHeader: ByteArray, byteBody: MutableList<ByteArray>): Pair<List<Float>, UInt>{
+        val floatList = convertToFloatList(StVPen2Data(convertHeader(byteHeader), convertBlocks(byteBody)))
+
+        return Pair(floatList, floatList.size.toUInt())
+    }
+
+    fun convertHeader(byteArray: ByteArray): StVPen2Header {
         val ViPen2_Get_Data_Command = byteArray[0].toInt()
         val ViPen2_Get_Data_Block = byteArray[1].toInt()
         val ViPen2_Get_Wave_ID = byteArray[2].toInt()
@@ -35,7 +48,7 @@ class Converter{
         )
     }
 
-    fun convertBlocks(list: MutableList<ByteArray>): MutableList<StVPen2Block>{
+    private fun convertBlocks(list: MutableList<ByteArray>): MutableList<StVPen2Block>{
 
         val finalList: MutableList<StVPen2Block> = mutableListOf()
 
@@ -68,7 +81,7 @@ class Converter{
         return finalList
     }
 
-    fun convertToFloatList(stVPen2Data: StVPen2Data): List<Float>{
+    private fun convertToFloatList(stVPen2Data: StVPen2Data): List<Float>{
         val timeStamp = stVPen2Data.stVPen2Header.timestamp
         val factor = stVPen2Data.stVPen2Header.coeff
 
@@ -76,7 +89,6 @@ class Converter{
 
         for(i in 0 until stVPen2Data.blocks.size){
             val block = stVPen2Data.blocks[i]
-
             if(block.ViPenWaveID != stVPen2Data.stVPen2Header.viPen2_Get_Wave_ID)
                 throw Exception("Incorrect timestamp!")
 
@@ -93,6 +105,9 @@ class Converter{
 
         return result
     }
+
+    fun convertDefaultValue(schema: DeviceData): ViPenUserData =
+        viPenMeasurementSchemaModelMapper.fromSchemaToModel(schema)
 
     private fun ByteArray.getFloat(): Float{
         this.reverse()

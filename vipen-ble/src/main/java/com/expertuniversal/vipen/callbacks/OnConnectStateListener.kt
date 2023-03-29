@@ -1,4 +1,4 @@
-package com.visoft.newvipenprotocol.callbacks
+package com.expertuniversal.vipen.callbacks
 
 interface OnConnectStateListener {
 
